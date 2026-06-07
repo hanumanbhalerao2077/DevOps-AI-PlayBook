@@ -8,7 +8,8 @@ import { metricsMiddleware, setupMetrics } from './metrics';
 dotenv.config();
 
 const app = express();
-const PORT: number = Number(process.env.GATEWAY_PORT) || 3001;
+const PORT: number = Number(process.env.GATEWAY_PORT) || Number(process.env.PORT) || 3001;
+
 
 app.use(helmet());
 app.use(cors());
@@ -16,6 +17,11 @@ app.use(cors());
 setupMetrics(app, { serviceName: 'gateway', serviceVersion: '1.0.0' });
 
 app.use(metricsMiddleware);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'gateway' });
+});
 
 const services = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:3002',
